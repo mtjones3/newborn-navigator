@@ -42,6 +42,28 @@
 
 <div class="max-w-3xl mx-auto px-6 py-8">
 
+    <!-- Local Resources -->
+    <div class="mb-10">
+        <a href="/my-updates/{{ token }}/local-resources"
+           class="block bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-indigo-300 transition group">
+            <div class="flex items-center gap-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-200 transition">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition">Local Resources</h3>
+                    <p class="text-sm text-gray-500 mt-0.5">Find hospitals, pediatricians, and daycares in your NYC neighborhood.</p>
+                </div>
+                <svg class="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </div>
+        </a>
+    </div>
+
     <!-- Newsletter content (if exists for this week) -->
     {% if newsletter and newsletter.sections %}
     <div class="mb-10">
@@ -119,28 +141,6 @@
         </div>
     </div>
     {% endif %}
-
-    <!-- Local Resources -->
-    <div class="mb-10">
-        <a href="/my-updates/{{ token }}/local-resources"
-           class="block bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-indigo-300 transition group">
-            <div class="flex items-center gap-4">
-                <div class="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-200 transition">
-                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition">Local Resources</h3>
-                    <p class="text-sm text-gray-500 mt-0.5">Find hospitals, pediatricians, and daycares in your NYC neighborhood.</p>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-            </div>
-        </a>
-    </div>
 
     <!-- Browse other weeks -->
     {% if available_issues %}
