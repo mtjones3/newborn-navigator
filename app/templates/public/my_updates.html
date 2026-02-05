@@ -8,7 +8,10 @@
 <!-- Header -->
 <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
     <div class="max-w-3xl mx-auto px-6 py-10">
-        <p class="text-indigo-200 text-sm font-medium mb-1">Newborn Navigator</p>
+        <div class="flex items-center justify-between mb-1">
+            <p class="text-indigo-200 text-sm font-medium">Newborn Navigator</p>
+            <a href="/" class="text-indigo-200 hover:text-white text-sm font-medium transition">Log out</a>
+        </div>
         <h1 class="text-3xl font-bold">
             {% if subscriber.baby_name %}{{ subscriber.baby_name }}'s{% else %}Your Baby's{% endif %}
             Updates
@@ -100,40 +103,7 @@
                 </div>
                 <div class="divide-y divide-gray-100">
                     {% for m in items %}
-                    <div class="px-6 py-4 {% if m.is_concern_flag %}bg-red-50{% endif %}">
-                        <div class="flex items-start gap-3">
-                            {% if m.is_concern_flag %}
-                            <div class="mt-0.5 flex-shrink-0 w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                </svg>
-                            </div>
-                            {% else %}
-                            <div class="mt-0.5 flex-shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                            </div>
-                            {% endif %}
-                            <div class="flex-1">
-                                <h4 class="text-sm font-semibold text-gray-900">
-                                    {{ m.title }}
-                                    {% if m.is_concern_flag %}
-                                    <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Talk to your pediatrician</span>
-                                    {% endif %}
-                                </h4>
-                                <p class="text-sm text-gray-600 mt-1">{{ m.description }}</p>
-                                {% if m.parent_action %}
-                                <div class="mt-2 bg-indigo-50 rounded-lg px-3 py-2">
-                                    <p class="text-sm text-indigo-800"><strong>Try this:</strong> {{ m.parent_action }}</p>
-                                </div>
-                                {% endif %}
-                                {% if m.source %}
-                                <p class="text-xs text-gray-400 mt-1">Source: {{ m.source }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+                    {% include "public/partials/milestone_card.html" %}
                     {% endfor %}
                 </div>
             </div>

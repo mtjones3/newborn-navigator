@@ -1,0 +1,72 @@
+<div id="milestone-card-{{ m.id }}" class="px-6 py-4 {% if m.is_concern_flag %}bg-red-50{% endif %}">
+    <div class="flex items-start gap-3">
+        <!-- Tracking checkbox -->
+        <div class="mt-0.5 flex-shrink-0">
+            {% set track = tracking.get(m.id) if tracking else None %}
+            {% set current_status = track.status if track else None %}
+            <button hx-post="/my-updates/{{ token }}/track/{{ m.id }}"
+                    hx-target="#milestone-card-{{ m.id }}"
+                    hx-swap="outerHTML"
+                    class="w-6 h-6 rounded-full flex items-center justify-center border-2 transition
+                           {% if current_status == 'achieved' %}bg-green-500 border-green-500 text-white
+                           {% elif current_status == 'concern' %}bg-amber-500 border-amber-500 text-white
+                           {% elif m.is_concern_flag %}border-red-300 hover:border-red-400 text-transparent hover:text-red-400
+                           {% else %}border-gray-300 hover:border-indigo-400 text-transparent hover:text-indigo-400
+                           {% endif %}"
+                    title="{% if current_status == 'achieved' %}Achieved — click to flag concern{% elif current_status == 'concern' %}Concern — click to clear{% else %}Click to mark achieved{% endif %}">
+                {% if current_status == 'achieved' %}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                {% elif current_status == 'concern' %}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01"/>
+                </svg>
+                {% else %}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                {% endif %}
+            </button>
+        </div>
+
+        <div class="flex-1">
+            <h4 class="text-sm font-semibold text-gray-900">
+                {{ m.title }}
+                {% if current_status == 'achieved' %}
+                <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Achieved</span>
+                {% elif current_status == 'concern' %}
+                <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Concern flagged</span>
+                {% endif %}
+                {% if m.is_concern_flag %}
+                <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Talk to your pediatrician</span>
+                {% endif %}
+            </h4>
+            <p class="text-sm text-gray-600 mt-1">{{ m.description }}</p>
+            {% if m.parent_action %}
+            <div class="mt-2 bg-indigo-50 rounded-lg px-3 py-2">
+                <p class="text-sm text-indigo-800"><strong>Try this:</strong> {{ m.parent_action }}</p>
+            </div>
+            {% endif %}
+            {% if m.source %}
+            <p class="text-xs text-gray-400 mt-1">Source: {{ m.source }}</p>
+            {% endif %}
+
+            <!-- Notes field -->
+            <div class="mt-3">
+                <div class="flex items-center gap-2">
+                    <textarea
+                        name="notes"
+                        rows="1"
+                        placeholder="Add a note..."
+                        hx-post="/my-updates/{{ token }}/track/{{ m.id }}/notes"
+                        hx-trigger="blur changed, keydown[key=='Enter'&&!shiftKey] changed"
+                        hx-target="#notes-status-{{ m.id }}"
+                        hx-swap="innerHTML"
+                        class="flex-1 text-xs text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-400 resize-none bg-gray-50 focus:bg-white transition">{{ track.notes if track and track.notes else '' }}</textarea>
+                    <span id="notes-status-{{ m.id }}" class="text-xs whitespace-nowrap"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

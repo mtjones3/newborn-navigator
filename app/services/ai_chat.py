@@ -11,6 +11,7 @@ def build_system_prompt(
     baby_name: str | None,
     baby_age_weeks: int | None,
     milestones: list[dict],
+    tracking_history: list[dict] | None = None,
 ) -> str:
     name = baby_name or "the baby"
     age_line = (
@@ -28,10 +29,22 @@ def build_system_prompt(
             if m.get("parent_action"):
                 milestone_lines += f"  Try this: {m['parent_action']}\n"
 
+    tracking_lines = ""
+    if tracking_history:
+        tracking_lines = "\n\nParent's tracking notes and progress:\n"
+        for t in tracking_history:
+            status_label = "ACHIEVED" if t["status"] == "achieved" else "CONCERN FLAGGED" if t["status"] == "concern" else "noted"
+            tracking_lines += f"- Week {t['week']} [{t['category']}] {t['title']} — {status_label}"
+            if t.get("notes"):
+                tracking_lines += f" | Parent note: \"{t['notes']}\""
+            tracking_lines += "\n"
+        tracking_lines += "\nUse this tracking information to personalize your responses. Reference milestones the parent has tracked, acknowledge achievements, and be sensitive to any concerns they've flagged.\n"
+
     return f"""You are the Baby Navigator Assistant, a warm and supportive guide for new parents navigating their baby's first 16 weeks.
 
 {age_line}
 {milestone_lines}
+{tracking_lines}
 
 Guidelines:
 - Be warm, encouraging, and concise. Keep responses to 2-3 short paragraphs unless more detail is asked for.

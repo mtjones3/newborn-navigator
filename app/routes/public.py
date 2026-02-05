@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Subscriber, Milestone, NewsletterIssue, LocalResource
+from app.models import Subscriber, Milestone, NewsletterIssue, LocalResource, MilestoneTracking
 from app.services.ai_chat import build_system_prompt, stream_chat_response
 
 router = APIRouter(tags=["public"])
@@ -165,6 +165,18 @@ async def my_updates(
         .all()
     )
 
+    # Get tracking data for this subscriber + this week's milestones
+    milestone_ids = [m.id for m in milestones]
+    tracking_rows = (
+        db.query(MilestoneTracking)
+        .filter(
+            MilestoneTracking.subscriber_id == subscriber.id,
+            MilestoneTracking.milestone_id.in_(milestone_ids),
+        )
+        .all()
+    ) if milestone_ids else []
+    tracking = {t.milestone_id: t for t in tracking_rows}
+
     return templates.TemplateResponse(
         "public/my_updates.html",
         {
@@ -177,7 +189,102 @@ async def my_updates(
             "newsletter": newsletter,
             "available_issues": available_issues,
             "token": token,
+            "tracking": tracking,
         },
+    )
+
+
+# ── Milestone Tracking ───────────────────────────────────────────────────────
+
+
+@router.post("/my-updates/{token}/track/{milestone_id}", response_class=HTMLResponse)
+async def toggle_milestone(
+    request: Request,
+    token: str,
+    milestone_id: int,
+    db: Session = Depends(get_db),
+):
+    subscriber = _get_subscriber_or_404(token, db)
+    if not subscriber:
+        return HTMLResponse("Not found", status_code=404)
+
+    milestone = db.query(Milestone).filter(Milestone.id == milestone_id).first()
+    if not milestone:
+        return HTMLResponse("Milestone not found", status_code=404)
+
+    track = (
+        db.query(MilestoneTracking)
+        .filter(
+            MilestoneTracking.subscriber_id == subscriber.id,
+            MilestoneTracking.milestone_id == milestone_id,
+        )
+        .first()
+    )
+
+    if not track:
+        track = MilestoneTracking(
+            subscriber_id=subscriber.id,
+            milestone_id=milestone_id,
+            status="achieved",
+            achieved_at=datetime.utcnow(),
+        )
+        db.add(track)
+    elif track.status == "achieved":
+        track.status = "concern"
+        track.achieved_at = None
+    elif track.status == "concern":
+        track.status = None
+        track.achieved_at = None
+    else:
+        track.status = "achieved"
+        track.achieved_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(track)
+
+    tracking = {milestone.id: track}
+    m = milestone
+    return templates.TemplateResponse(
+        "public/partials/milestone_card.html",
+        {"request": request, "m": m, "token": token, "tracking": tracking},
+    )
+
+
+@router.post("/my-updates/{token}/track/{milestone_id}/notes", response_class=HTMLResponse)
+async def save_milestone_notes(
+    request: Request,
+    token: str,
+    milestone_id: int,
+    notes: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    subscriber = _get_subscriber_or_404(token, db)
+    if not subscriber:
+        return HTMLResponse("Not found", status_code=404)
+
+    track = (
+        db.query(MilestoneTracking)
+        .filter(
+            MilestoneTracking.subscriber_id == subscriber.id,
+            MilestoneTracking.milestone_id == milestone_id,
+        )
+        .first()
+    )
+
+    if not track:
+        track = MilestoneTracking(
+            subscriber_id=subscriber.id,
+            milestone_id=milestone_id,
+            notes=notes.strip() or None,
+        )
+        db.add(track)
+    else:
+        track.notes = notes.strip() or None
+
+    db.commit()
+
+    return HTMLResponse(
+        '<span class="text-green-600 text-xs font-medium">Saved!</span>'
     )
 
 
@@ -227,10 +334,32 @@ async def chat(token: str, request: Request, db: Session = Depends(get_db)):
         for m in milestones
     ]
 
+    # Query ALL tracking data for this subscriber (not just current week)
+    all_tracking = (
+        db.query(MilestoneTracking, Milestone)
+        .join(Milestone, MilestoneTracking.milestone_id == Milestone.id)
+        .filter(MilestoneTracking.subscriber_id == subscriber.id)
+        .order_by(Milestone.week_number, Milestone.category)
+        .all()
+    )
+    tracking_history = [
+        {
+            "week": m.week_number,
+            "category": m.category,
+            "title": m.title,
+            "status": t.status,
+            "notes": t.notes,
+            "achieved_at": t.achieved_at.isoformat() if t.achieved_at else None,
+        }
+        for t, m in all_tracking
+        if t.status or t.notes
+    ]
+
     system_prompt = build_system_prompt(
         baby_name=subscriber.baby_name,
         baby_age_weeks=baby_age,
         milestones=milestone_dicts,
+        tracking_history=tracking_history,
     )
 
     async def event_generator():
