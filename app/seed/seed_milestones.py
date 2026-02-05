@@ -1,5 +1,5 @@
 """
-Seed script for newborn milestone data (weeks 0-12).
+Seed script for newborn milestone data (weeks 0-16).
 
 Run with:
     python -m app.seed.seed_milestones
@@ -1255,6 +1255,599 @@ MILESTONES = [
         "parent_action": (
             "Sit face-to-face and slowly make exaggerated expressions. "
             "Give baby plenty of time to try to imitate you."
+        ),
+        "is_concern_flag": False,
+    },
+    # ==================================================================
+    # WEEKS 13-14  (Entering four months)
+    # ==================================================================
+
+    # -- motor --
+    {
+        "week_number": 13,
+        "category": "motor",
+        "title": "Steadier head control when held upright",
+        "description": (
+            "Baby holds their head steady and centered when sitting "
+            "supported or held upright, with much less wobbling."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Practice supported sitting on your lap. Hold baby at the "
+            "hips and let them work on balancing their head and trunk."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 13,
+        "category": "motor",
+        "title": "Reaches for objects with both hands",
+        "description": (
+            "Baby actively reaches for toys using both arms, though "
+            "accuracy is still developing. May rake at objects with "
+            "open fingers."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Hold toys at different angles and distances to encourage "
+            "reaching in various directions. Celebrate successful grabs."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 14,
+        "category": "motor",
+        "title": "Pushes up on extended arms during tummy time",
+        "description": (
+            "Baby can fully extend their arms during tummy time, "
+            "lifting head and chest well off the surface and looking "
+            "around with good control."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "During tummy time, place toys in a wide arc to encourage "
+            "weight shifting and pivoting. Aim for 60+ minutes total per day."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 14,
+        "category": "motor",
+        "title": "May begin to roll from tummy to back",
+        "description": (
+            "Some babies make their first roll (usually tummy to back "
+            "first) around this age by pushing up and tipping to one side."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Never leave baby unattended on elevated surfaces. If baby "
+            "hasn't rolled yet, that's normal — it can happen anytime "
+            "between 3 and 5 months."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- sensory --
+    {
+        "week_number": 13,
+        "category": "sensory",
+        "title": "Colour vision improving significantly",
+        "description": (
+            "Baby can now distinguish a wider range of colours and "
+            "shows clear preferences for brighter, more saturated hues."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Introduce colourful toys and board books. Point to and "
+            "name colours during play — it all builds language too."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 14,
+        "category": "sensory",
+        "title": "Explores objects by mouthing",
+        "description": (
+            "Baby brings nearly everything to their mouth. Mouthing is "
+            "a primary way babies explore texture, shape, and temperature "
+            "at this age."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Ensure toys are clean and too large to be a choking hazard. "
+            "Offer a variety of safe textures: silicone, fabric, wood."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- communication --
+    {
+        "week_number": 13,
+        "category": "communication",
+        "title": "Babbles with varied consonant-vowel combinations",
+        "description": (
+            "Baby produces longer babble strings mixing consonants and "
+            "vowels (ba-ba, ga-ga, ma-ma) with varied intonation patterns."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Respond to babbles as if they are real words. 'Oh, you "
+            "said ba-ba! Tell me more!' This encourages continued "
+            "vocalisation."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 14,
+        "category": "communication",
+        "title": "Squeals with delight during play",
+        "description": (
+            "Baby produces high-pitched squeals and excited vocalisations "
+            "during enjoyable interactions, showing a growing range of "
+            "emotional expression through sound."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Play interactive games that build anticipation — like "
+            "'I'm gonna get you!' with a gentle tickle at the end."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- feeding --
+    {
+        "week_number": 13,
+        "category": "feeding",
+        "title": "Feeding routine well established",
+        "description": (
+            "Most babies have a fairly predictable feeding pattern. "
+            "Breastfed babies are very efficient; formula-fed babies "
+            "take about 5-6 oz per feed, 5-6 times per day."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Continue to follow hunger cues rather than a strict schedule. "
+            "Solid foods are not recommended until around 6 months."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 14,
+        "category": "feeding",
+        "title": "Increased distraction during feeds",
+        "description": (
+            "Baby becomes more aware of surroundings and may pull off "
+            "the breast or bottle to look around, especially when there "
+            "is activity nearby."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Feed in a calm, quiet environment if baby is easily "
+            "distracted. A nursing necklace can help maintain focus "
+            "during breastfeeding."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- sleep --
+    {
+        "week_number": 13,
+        "category": "sleep",
+        "title": "Sleep regression may begin",
+        "description": (
+            "The well-known '4-month sleep regression' often starts "
+            "around 13-14 weeks as baby's sleep cycles mature to a more "
+            "adult-like pattern with lighter sleep stages."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Increased night waking is temporary and normal. Stay "
+            "consistent with your bedtime routine. Avoid introducing "
+            "new sleep associations out of desperation."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 14,
+        "category": "sleep",
+        "title": "Naps consolidating to 3-4 per day",
+        "description": (
+            "Daytime sleep is becoming more organised with 3-4 distinct "
+            "naps. Awake windows extend to about 1.5-2 hours."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Watch for tired cues after 1.5-2 hours of awake time. "
+            "A short wind-down routine before naps (diaper change, "
+            "song, dark room) can help."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- social_emotional --
+    {
+        "week_number": 13,
+        "category": "social_emotional",
+        "title": "Initiates social interaction",
+        "description": (
+            "Baby actively seeks attention by cooing, smiling, or "
+            "fussing when a caregiver is nearby but not engaging. "
+            "This marks a shift from reactive to proactive socialising."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Respond when baby 'calls' for your attention. This teaches "
+            "them that communication is effective and worthwhile."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 14,
+        "category": "social_emotional",
+        "title": "Laughs out loud regularly",
+        "description": (
+            "Belly laughs become more common and baby may laugh in "
+            "response to specific games, sounds, or facial expressions."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Find what makes your baby laugh and repeat it! Common "
+            "triggers: peek-a-boo, funny sounds, gentle bouncing, "
+            "and blowing raspberries."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- cognitive --
+    {
+        "week_number": 13,
+        "category": "cognitive",
+        "title": "Recognises familiar objects",
+        "description": (
+            "Baby shows recognition of familiar toys or objects by "
+            "reaching for them preferentially or showing excitement "
+            "when they appear."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Keep a few favourite toys in rotation. Introduce new "
+            "objects one at a time and let baby explore them thoroughly."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 14,
+        "category": "cognitive",
+        "title": "Watches faces intently and studies expressions",
+        "description": (
+            "Baby spends extended time studying facial expressions, "
+            "looking from eyes to mouth and back, learning to read "
+            "emotional cues."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Use exaggerated facial expressions during interaction. "
+            "Name emotions: 'Look, Mama is happy! See my big smile?'"
+        ),
+        "is_concern_flag": False,
+    },
+
+    # ==================================================================
+    # WEEKS 15-16  (Four months)
+    # ==================================================================
+
+    # -- motor --
+    {
+        "week_number": 15,
+        "category": "motor",
+        "title": "Rolls from tummy to back consistently",
+        "description": (
+            "Baby can roll from front to back reliably. Some may also "
+            "begin attempting to roll from back to tummy, though this "
+            "typically comes a few weeks later."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Always place baby on a safe floor surface for play. "
+            "Stop swaddling for sleep if you haven't already, as baby "
+            "needs free arms to roll safely."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "motor",
+        "title": "Grasps objects purposefully with whole hand",
+        "description": (
+            "Baby uses a raking or palmar grasp to pick up toys "
+            "deliberately. They can hold a toy, bring it to their "
+            "mouth, and transfer it between hands with effort."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Offer toys of different sizes and shapes. Rattles, "
+            "teething rings, and soft blocks are great for practising "
+            "grasp and manipulation."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "motor",
+        "title": "No reaching or grasping by 4 months",
+        "description": (
+            "If baby is not reaching for or attempting to grasp objects "
+            "by 4 months, or shows very asymmetric use of the hands, "
+            "this warrants evaluation."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Discuss with your pediatrician at the 4-month well visit. "
+            "Occupational therapy referral may be recommended."
+        ),
+        "is_concern_flag": True,
+    },
+    {
+        "week_number": 15,
+        "category": "motor",
+        "title": "Mini push-ups and pivoting during tummy time",
+        "description": (
+            "Baby pushes up high on extended arms and may pivot in a "
+            "circle on their tummy, reaching for toys in different "
+            "directions."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Place toys in a circle around baby during tummy time to "
+            "encourage pivoting. This builds core and shoulder strength "
+            "needed for crawling later."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- sensory --
+    {
+        "week_number": 15,
+        "category": "sensory",
+        "title": "Depth perception beginning to develop",
+        "description": (
+            "Binocular vision is improving and baby is starting to "
+            "develop depth perception, reaching more accurately for "
+            "objects at varying distances."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Play games where you move toys closer and farther away. "
+            "Stack a few soft blocks and let baby knock them over."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "sensory",
+        "title": "Responds to own name",
+        "description": (
+            "Baby begins to turn or look when their name is called, "
+            "showing they recognise the sound pattern as referring to "
+            "them."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Use your baby's name frequently during daily routines. "
+            "If there is no response to name by 4 months, mention it "
+            "to your pediatrician."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "sensory",
+        "title": "Does not respond to sounds or own name by 4 months",
+        "description": (
+            "If baby consistently does not turn toward sounds or show "
+            "any response when their name is called, this may indicate "
+            "a hearing concern."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Request a hearing evaluation from your pediatrician. "
+            "Early detection of hearing issues is critical for speech "
+            "and language development."
+        ),
+        "is_concern_flag": True,
+    },
+
+    # -- communication --
+    {
+        "week_number": 15,
+        "category": "communication",
+        "title": "Babbling becomes more speech-like",
+        "description": (
+            "Baby's babbling takes on the rhythm and intonation of real "
+            "speech, with rising and falling pitch patterns that sound "
+            "like questions and statements."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Have 'conversations' where you respond to baby's babble "
+            "as though they said something meaningful. This teaches "
+            "conversational rhythm."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "communication",
+        "title": "Blows raspberries and experiments with lip sounds",
+        "description": (
+            "Baby discovers they can make sounds with their lips — "
+            "blowing raspberries, smacking lips, and making 'brrr' "
+            "sounds. This builds oral motor control for later speech."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Blow raspberries back! This is great oral motor practice "
+            "and babies find it hilarious. It also exercises muscles "
+            "used in feeding and future speech."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- feeding --
+    {
+        "week_number": 15,
+        "category": "feeding",
+        "title": "Shows interest in what others are eating",
+        "description": (
+            "Baby may watch intently when others eat, follow food from "
+            "plate to mouth, and open their mouth in imitation. This "
+            "does not mean they are ready for solids yet."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Interest in food is normal but not a readiness sign on "
+            "its own. Wait until around 6 months and when baby can "
+            "sit with support before starting solids."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "feeding",
+        "title": "Takes 6-8 oz per bottle feed",
+        "description": (
+            "Formula-fed babies typically take 6-8 ounces per feed, "
+            "4-5 times per day. Breastfed babies continue to self-"
+            "regulate efficiently at the breast."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Total daily intake should be around 24-32 oz of formula "
+            "or equivalent breast milk. Continue to follow baby's cues "
+            "rather than forcing amounts."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- sleep --
+    {
+        "week_number": 15,
+        "category": "sleep",
+        "title": "4-month sleep regression may peak",
+        "description": (
+            "Sleep disruption from maturing sleep cycles may peak "
+            "around 15-16 weeks. Baby may wake more frequently and "
+            "have difficulty falling back to sleep."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Stay consistent with routines. This regression is "
+            "permanent brain maturation, not a phase to 'get through.' "
+            "It's a good time to focus on healthy sleep habits."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "sleep",
+        "title": "Total sleep around 14-15 hours per day",
+        "description": (
+            "By 4 months, most babies sleep 10-12 hours at night "
+            "(with wakings) and 3-4 hours during the day across "
+            "3-4 naps."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "If night sleep is very disrupted, ensure baby is getting "
+            "enough daytime sleep. An overtired baby actually sleeps "
+            "worse at night."
+        ),
+        "is_concern_flag": False,
+    },
+
+    # -- social_emotional --
+    {
+        "week_number": 15,
+        "category": "social_emotional",
+        "title": "Shows a range of emotions clearly",
+        "description": (
+            "Baby's emotional expressions become more distinct and "
+            "readable — joy, frustration, excitement, boredom, and "
+            "displeasure are all clearly communicated."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Name baby's emotions as you see them: 'You look frustrated! "
+            "Let me help.' This builds emotional vocabulary over time."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "social_emotional",
+        "title": "Enjoys looking at self in mirror",
+        "description": (
+            "Baby is fascinated by their reflection, smiling, cooing, "
+            "and reaching toward the mirror. They don't yet recognise "
+            "it as themselves."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Place an unbreakable baby mirror at tummy-time level. "
+            "Sit together in front of a mirror and point out features: "
+            "'There's your nose!'"
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "social_emotional",
+        "title": "No social engagement or emotional expression by 4 months",
+        "description": (
+            "If baby rarely smiles, does not laugh, shows no interest "
+            "in people, or does not express a range of emotions by "
+            "4 months, this should be discussed with your pediatrician."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Raise these observations at the 4-month well visit. "
+            "Your pediatrician may recommend developmental screening."
+        ),
+        "is_concern_flag": True,
+    },
+
+    # -- cognitive --
+    {
+        "week_number": 15,
+        "category": "cognitive",
+        "title": "Improved hand-eye coordination",
+        "description": (
+            "Baby can see a toy, reach for it, and grasp it in one "
+            "smooth motion — a significant coordination milestone "
+            "combining vision and motor planning."
+        ),
+        "source": "CDC",
+        "parent_action": (
+            "Offer toys at varying distances and angles. Let baby "
+            "practise reaching while lying on their back, sitting "
+            "supported, and during tummy time."
+        ),
+        "is_concern_flag": False,
+    },
+    {
+        "week_number": 16,
+        "category": "cognitive",
+        "title": "Begins to show memory for people and places",
+        "description": (
+            "Baby may show excitement when arriving at a familiar "
+            "place or seeing a regular caregiver, indicating growing "
+            "memory capacity."
+        ),
+        "source": "AAP",
+        "parent_action": (
+            "Narrate your routines and where you are going. 'We're "
+            "going to Grandma's house!' Familiar narration strengthens "
+            "memory associations."
         ),
         "is_concern_flag": False,
     },

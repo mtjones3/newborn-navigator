@@ -19,6 +19,7 @@ class Settings:
     )
     DATABASE_URL: str = os.getenv("DATABASE_URL", _default_db)
     RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     FROM_EMAIL: str = os.getenv("FROM_EMAIL", "hello@newborn-navigator.com")
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60 * 24  # 24 hours

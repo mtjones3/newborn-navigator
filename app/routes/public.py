@@ -1,14 +1,16 @@
+import json
 import uuid
 from datetime import date, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, Query, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Subscriber, Milestone, NewsletterIssue, LocalResource
+from app.services.ai_chat import build_system_prompt, stream_chat_response
 
 router = APIRouter(tags=["public"])
 templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
@@ -127,9 +129,9 @@ async def my_updates(
 
     # Use query param week if provided, otherwise calculate from birth date
     if week is not None:
-        week = max(0, min(week, 12))
+        week = max(0, min(week, 16))
     else:
-        week = min(baby_age, 12) if baby_age is not None else 0
+        week = min(baby_age, 16) if baby_age is not None else 0
 
     # Get milestones for this week
     milestones = (
@@ -177,6 +179,69 @@ async def my_updates(
             "token": token,
         },
     )
+
+
+# ── AI Chat ──────────────────────────────────────────────────────────────────
+
+
+@router.post("/my-updates/{token}/chat")
+async def chat(token: str, request: Request, db: Session = Depends(get_db)):
+    subscriber = (
+        db.query(Subscriber).filter(Subscriber.unsubscribe_token == token).first()
+    )
+    if not subscriber:
+        return StreamingResponse(
+            iter([f'data: {json.dumps({"error": "Subscriber not found"})}\n\n']),
+            media_type="text/event-stream",
+        )
+
+    body = await request.json()
+    messages = body.get("messages", [])
+    if not messages:
+        return StreamingResponse(
+            iter([f'data: {json.dumps({"error": "No messages provided"})}\n\n']),
+            media_type="text/event-stream",
+        )
+
+    baby_age = _baby_age_weeks(subscriber.baby_birth_date)
+    viewed_week = body.get("week")
+    if viewed_week is not None:
+        current_week = max(0, min(int(viewed_week), 16))
+    else:
+        current_week = min(baby_age, 16) if baby_age is not None else 0
+
+    milestones = (
+        db.query(Milestone)
+        .filter(Milestone.week_number == current_week)
+        .order_by(Milestone.category, Milestone.id)
+        .all()
+    )
+    milestone_dicts = [
+        {
+            "category": m.category,
+            "title": m.title,
+            "description": m.description,
+            "is_concern_flag": m.is_concern_flag,
+            "parent_action": m.parent_action,
+        }
+        for m in milestones
+    ]
+
+    system_prompt = build_system_prompt(
+        baby_name=subscriber.baby_name,
+        baby_age_weeks=baby_age,
+        milestones=milestone_dicts,
+    )
+
+    async def event_generator():
+        try:
+            async for chunk in stream_chat_response(messages, system_prompt):
+                yield f"data: {json.dumps({'text': chunk})}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.get("/unsubscribe/{token}", response_class=HTMLResponse)

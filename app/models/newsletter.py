@@ -11,7 +11,7 @@ class NewsletterIssue(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     subject_line = Column(String, nullable=False)
-    week_number = Column(Integer, nullable=False)  # 0-12
+    week_number = Column(Integer, nullable=False)  # 0-16
     status = Column(String, default="draft")  # draft, scheduled, sent
     sent_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

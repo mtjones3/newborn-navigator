@@ -8,7 +8,7 @@ class Milestone(Base):
     __tablename__ = "milestones"
 
     id = Column(Integer, primary_key=True, index=True)
-    week_number = Column(Integer, nullable=False, index=True)  # 0-12
+    week_number = Column(Integer, nullable=False, index=True)  # 0-16
     category = Column(
         String, nullable=False
     )  # motor, sensory, communication, feeding, sleep, social_emotional, cognitive
