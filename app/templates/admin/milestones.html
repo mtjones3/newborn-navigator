@@ -1,0 +1,59 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Milestones — Week {{ week }} — Newborn Navigator{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold text-gray-900 mb-6">Milestone Browser</h2>
+
+<!-- Week Selector -->
+<div class="mb-6 flex flex-wrap gap-2">
+    {% for w in weeks %}
+    <a href="/admin/milestones?week={{ w }}"
+       class="px-3 py-1.5 rounded-lg text-sm font-medium transition
+              {% if w == week %}bg-indigo-600 text-white{% else %}bg-white text-gray-700 border border-gray-300 hover:bg-gray-50{% endif %}">
+        {% if w == 0 %}Birth{% else %}Week {{ w }}{% endif %}
+    </a>
+    {% endfor %}
+</div>
+
+{% if categories %}
+<div class="space-y-6">
+    {% for category, items in categories.items() %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 capitalize">
+            {% if category == 'social_emotional' %}Social & Emotional
+            {% else %}{{ category | replace('_', ' ') }}{% endif %}
+        </h3>
+        <div class="space-y-4">
+            {% for m in items %}
+            <div class="border-l-4 pl-4 py-1 {% if m.is_concern_flag %}border-red-400 bg-red-50 rounded-r-lg pr-4{% else %}border-indigo-300{% endif %}">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-900">
+                            {{ m.title }}
+                            {% if m.is_concern_flag %}
+                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Concern Flag</span>
+                            {% endif %}
+                        </h4>
+                        <p class="text-sm text-gray-600 mt-1">{{ m.description }}</p>
+                        {% if m.parent_action %}
+                        <p class="text-sm text-indigo-700 mt-2"><strong>Parent tip:</strong> {{ m.parent_action }}</p>
+                        {% endif %}
+                    </div>
+                    {% if m.source %}
+                    <span class="text-xs text-gray-400 ml-4 whitespace-nowrap">{{ m.source }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+    <p class="text-gray-500">No milestones found for Week {{ week }}. Run the seed script to populate data.</p>
+    <code class="mt-2 block text-sm text-gray-400">python -m app.seed.seed_milestones</code>
+</div>
+{% endif %}
+{% endblock %}

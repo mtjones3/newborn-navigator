@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Local Resources — Newborn Navigator{% endblock %}
+
+{% block body %}
+<!-- Header -->
+<div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+    <div class="max-w-5xl mx-auto px-6 py-10">
+        <a href="/my-updates/{{ token }}" class="inline-flex items-center gap-1 text-indigo-200 hover:text-white text-sm mb-4 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to Dashboard
+        </a>
+        <h1 class="text-3xl font-bold">Local Resources</h1>
+        <p class="text-indigo-200 mt-2">Hospitals, pediatricians, and daycares in your NYC neighborhood.</p>
+    </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-8">
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-end gap-4">
+            <!-- Neighborhood dropdown -->
+            <div class="flex-1">
+                <label for="neighborhood-select" class="block text-sm font-medium text-gray-700 mb-1">Neighborhood</label>
+                <select id="neighborhood-select"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        onchange="filterResources()">
+                    <option value="">All Neighborhoods</option>
+                    {% for n in neighborhoods %}
+                    <option value="{{ n }}" {% if n == selected_neighborhood %}selected{% endif %}>{{ n }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Save neighborhood -->
+            <div class="flex items-end gap-2">
+                <form hx-post="/my-updates/{{ token }}/save-neighborhood"
+                      hx-target="#save-status"
+                      hx-swap="innerHTML"
+                      class="flex items-end gap-2">
+                    <input type="hidden" name="neighborhood" id="save-neighborhood-input" value="{{ selected_neighborhood }}">
+                    <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition">
+                        Save as My Neighborhood
+                    </button>
+                </form>
+                <span id="save-status"></span>
+            </div>
+        </div>
+
+        <!-- Category tabs -->
+        <div class="mt-4 flex flex-wrap gap-2" id="category-tabs">
+            <button onclick="setCategory('all')"
+                    data-category="all"
+                    class="category-tab px-4 py-1.5 rounded-full text-sm font-medium transition bg-indigo-600 text-white">
+                All
+            </button>
+            <button onclick="setCategory('hospital')"
+                    data-category="hospital"
+                    class="category-tab px-4 py-1.5 rounded-full text-sm font-medium transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-50">
+                Hospitals
+            </button>
+            <button onclick="setCategory('pediatrician')"
+                    data-category="pediatrician"
+                    class="category-tab px-4 py-1.5 rounded-full text-sm font-medium transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-50">
+                Pediatricians
+            </button>
+            <button onclick="setCategory('daycare')"
+                    data-category="daycare"
+                    class="category-tab px-4 py-1.5 rounded-full text-sm font-medium transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-50">
+                Daycares
+            </button>
+        </div>
+    </div>
+
+    <!-- Resource cards (HTMX target) -->
+    <div id="resource-grid">
+        {% include "public/partials/resource_cards.html" %}
+    </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-400 py-8">
+    <div class="max-w-5xl mx-auto px-6 text-center text-sm">
+        <p>Newborn Navigator &mdash; Evidence-based guidance for new parents.</p>
+        <p class="mt-2 text-gray-600">
+            This is not medical advice. Always consult your pediatrician.
+        </p>
+    </div>
+</footer>
+
+<script>
+    let currentCategory = '{{ selected_category }}';
+
+    function filterResources() {
+        const neighborhood = document.getElementById('neighborhood-select').value;
+        // Update the hidden input for the save form
+        document.getElementById('save-neighborhood-input').value = neighborhood;
+        // Clear the save status
+        document.getElementById('save-status').innerHTML = '';
+
+        const url = `/my-updates/{{ token }}/local-resources/filter?neighborhood=${encodeURIComponent(neighborhood)}&category=${encodeURIComponent(currentCategory)}`;
+        htmx.ajax('GET', url, {target: '#resource-grid', swap: 'innerHTML'});
+    }
+
+    function setCategory(cat) {
+        currentCategory = cat;
+        // Update tab styles
+        document.querySelectorAll('.category-tab').forEach(btn => {
+            if (btn.dataset.category === cat) {
+                btn.className = 'category-tab px-4 py-1.5 rounded-full text-sm font-medium transition bg-indigo-600 text-white';
+            } else {
+                btn.className = 'category-tab px-4 py-1.5 rounded-full text-sm font-medium transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-50';
+            }
+        });
+        filterResources();
+    }
+</script>
+{% endblock %}

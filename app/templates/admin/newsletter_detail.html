@@ -1,0 +1,187 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ newsletter.title }} — Newborn Navigator{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <a href="/admin/newsletters" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; All Newsletters</a>
+            <h2 class="text-2xl font-bold text-gray-900 mt-1">{{ newsletter.title }}</h2>
+        </div>
+        <div class="flex gap-2">
+            <a href="/admin/preview/{{ newsletter.id }}"
+               class="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                Preview Email
+            </a>
+            <form method="post" action="/admin/newsletters/{{ newsletter.id }}/delete"
+                  onsubmit="return confirm('Delete this newsletter?')">
+                <button type="submit"
+                        class="bg-red-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-700 transition">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Newsletter Meta -->
+    <form method="post" action="/admin/newsletters/{{ newsletter.id }}/edit"
+          class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Newsletter Settings</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" name="title" value="{{ newsletter.title }}" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Subject Line</label>
+                <input type="text" name="subject_line" value="{{ newsletter.subject_line }}" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Week</label>
+                <select name="week_number"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm">
+                    {% for w in range(13) %}
+                    <option value="{{ w }}" {% if newsletter.week_number == w %}selected{% endif %}>
+                        Week {{ w }}{% if w == 0 %} (Birth){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm">
+                    {% for s in ['draft', 'scheduled', 'sent'] %}
+                    <option value="{{ s }}" {% if newsletter.status == s %}selected{% endif %}>{{ s | capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <button type="submit"
+                class="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
+            Save Changes
+        </button>
+    </form>
+
+    <!-- Sections -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Content Sections</h3>
+
+        {% if newsletter.sections %}
+        <div class="space-y-4 mb-6">
+            {% for section in newsletter.sections %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <form method="post" action="/admin/sections/{{ section.id }}/edit">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                            {{ section.section_type }}
+                        </span>
+                        <div class="flex items-center gap-2">
+                            {% if section.is_paid_only %}
+                            <span class="text-xs text-amber-600 font-medium">Paid Only</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Section Title</label>
+                            <input type="text" name="title" value="{{ section.title or '' }}"
+                                   class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Body (Markdown)</label>
+                            <textarea name="body" rows="4"
+                                      class="w-full px-3 py-1.5 border border-gray-300 rounded text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">{{ section.body }}</textarea>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <label class="text-xs font-medium text-gray-500">Sort Order</label>
+                                <input type="number" name="sort_order" value="{{ section.sort_order }}"
+                                       class="w-16 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="is_paid_only" value="true"
+                                       {% if section.is_paid_only %}checked{% endif %}
+                                       class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                Paid only
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <button type="submit"
+                                class="bg-indigo-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-indigo-700 transition">
+                            Save Section
+                        </button>
+                    </div>
+                </form>
+                <form method="post" action="/admin/sections/{{ section.id }}/delete"
+                      onsubmit="return confirm('Delete this section?')" class="mt-2">
+                    <button type="submit"
+                            class="text-red-600 hover:text-red-800 text-xs font-medium">
+                        Delete Section
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500 mb-4">No sections yet. Add one below.</p>
+        {% endif %}
+
+        <!-- Add Section Form -->
+        <div class="border-t border-gray-200 pt-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">Add New Section</h4>
+            <form method="post" action="/admin/newsletters/{{ newsletter.id }}/sections/add" class="space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Type</label>
+                        <select name="section_type"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            {% for st in section_types %}
+                            <option value="{{ st }}">{{ st | capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Title</label>
+                        <input type="text" name="title" placeholder="Optional title"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Sort Order</label>
+                        <input type="number" name="sort_order" value="{{ (newsletter.sections | length) * 10 }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Body (Markdown)</label>
+                    <textarea name="body" rows="3" placeholder="Write section content..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                </div>
+                <button type="submit"
+                        class="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+                    Add Section
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Send Test Email -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Send Test Email</h3>
+        <form method="post" action="/admin/preview/{{ newsletter.id }}/send-test" class="flex gap-3">
+            <input type="email" name="test_email" placeholder="test@example.com" required
+                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            <button type="submit"
+                    class="bg-amber-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-amber-700 transition">
+                Send Test
+            </button>
+        </form>
+        <p class="text-xs text-gray-400 mt-2">Email will be logged to email_logs/ (stubbed mode).</p>
+    </div>
+</div>
+{% endblock %}
