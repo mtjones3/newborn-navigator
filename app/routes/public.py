@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Subscriber, Milestone, NewsletterIssue, LocalResource, MilestoneTracking
-from app.services.ai_chat import build_system_prompt, stream_chat_response
+from app.services.ai_chat import build_system_prompt, stream_chat_response, generate_milestone_response
 
 router = APIRouter(tags=["public"])
 templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
@@ -317,6 +317,10 @@ async def save_milestone_notes(
     if not subscriber:
         return HTMLResponse("Not found", status_code=404)
 
+    milestone = db.query(Milestone).filter(Milestone.id == milestone_id).first()
+    if not milestone:
+        return HTMLResponse("Milestone not found", status_code=404)
+
     track = (
         db.query(MilestoneTracking)
         .filter(
@@ -336,30 +340,38 @@ async def save_milestone_notes(
     else:
         track.notes = notes.strip() or None
 
-    db.commit()
-
-    # Generate contextual feedback based on note content
-    note_text = notes.strip().lower()
+    note_text = notes.strip()
     if not note_text:
+        track.ai_response = None
+        db.commit()
         return HTMLResponse(
             '<span class="text-gray-400 text-xs">Note cleared</span>'
         )
 
-    # Detect questions
-    if "?" in notes or any(w in note_text for w in ["how", "why", "when", "should", "can i", "is it", "what if"]):
-        return HTMLResponse(
-            '<span class="text-indigo-600 text-xs font-medium cursor-pointer" onclick="toggleChat()">Saved! Click here to ask the assistant about this</span>'
+    # Generate AI response
+    baby_age = _baby_age_weeks(subscriber.baby_birth_date)
+    try:
+        ai_response = await generate_milestone_response(
+            baby_name=subscriber.baby_name,
+            baby_age_weeks=baby_age,
+            milestone_title=milestone.title,
+            milestone_description=milestone.description,
+            parent_note=note_text,
+            status=track.status,
         )
-    # Detect concerns/worries
-    elif any(w in note_text for w in ["worried", "concern", "not sure", "nervous", "scared", "afraid", "help", "problem", "issue", "wrong", "behind", "late", "slow"]):
-        return HTMLResponse(
-            '<span class="text-amber-600 text-xs font-medium cursor-pointer" onclick="toggleChat()">Noted. Want to chat about this concern?</span>'
-        )
-    # Detect positive observations
-    elif any(w in note_text for w in ["early", "already", "great", "amazing", "love", "excited", "happy", "did it", "first time"]):
-        return HTMLResponse(
-            '<span class="text-green-600 text-xs font-medium">Saved! Great observation!</span>'
-        )
+        track.ai_response = ai_response
+    except Exception:
+        ai_response = None
+        track.ai_response = None
+
+    db.commit()
+
+    if ai_response:
+        return HTMLResponse(f'''
+            <div class="mt-2 bg-indigo-50 rounded-lg px-3 py-2 border-l-4 border-indigo-400">
+                <p class="text-xs text-indigo-800">{ai_response}</p>
+            </div>
+        ''')
     else:
         return HTMLResponse(
             '<span class="text-green-600 text-xs font-medium">Saved!</span>'

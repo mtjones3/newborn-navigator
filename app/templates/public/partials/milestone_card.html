@@ -74,17 +74,25 @@
 
             <!-- Notes field -->
             <div class="mt-3">
-                <div class="flex items-center gap-2">
+                <div class="flex flex-col gap-1">
                     <textarea
                         name="notes"
                         rows="1"
-                        placeholder="Add a note..."
+                        placeholder="Add a note or question..."
                         hx-post="/my-updates/{{ token }}/track/{{ m.id }}/notes"
                         hx-trigger="blur changed, keydown[key=='Enter'&&!shiftKey] changed"
                         hx-target="#notes-status-{{ m.id }}"
                         hx-swap="innerHTML"
-                        class="flex-1 text-xs text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-400 resize-none bg-gray-50 focus:bg-white transition">{{ track.notes if track and track.notes else '' }}</textarea>
-                    <span id="notes-status-{{ m.id }}" class="text-xs whitespace-nowrap"></span>
+                        hx-indicator="#notes-loading-{{ m.id }}"
+                        class="w-full text-xs text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-400 resize-none bg-gray-50 focus:bg-white transition">{{ track.notes if track and track.notes else '' }}</textarea>
+                    <span id="notes-loading-{{ m.id }}" class="htmx-indicator text-xs text-indigo-500">Thinking...</span>
+                    <div id="notes-status-{{ m.id }}">
+                        {% if track and track.ai_response %}
+                        <div class="mt-2 bg-indigo-50 rounded-lg px-3 py-2 border-l-4 border-indigo-400">
+                            <p class="text-xs text-indigo-800">{{ track.ai_response }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>

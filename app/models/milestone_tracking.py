@@ -15,6 +15,7 @@ class MilestoneTracking(Base):
     milestone_id = Column(Integer, ForeignKey("milestones.id"), nullable=False, index=True)
     status = Column(String, nullable=True)  # "achieved" or "concern"; NULL = not tracked
     notes = Column(Text, nullable=True)
+    ai_response = Column(Text, nullable=True)  # AI's response to the parent's note
     achieved_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

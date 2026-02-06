@@ -77,3 +77,47 @@ async def stream_chat_response(
     ) as stream:
         async for text in stream.text_stream:
             yield text
+
+
+async def generate_milestone_response(
+    baby_name: str | None,
+    baby_age_weeks: int | None,
+    milestone_title: str,
+    milestone_description: str,
+    parent_note: str,
+    status: str | None,
+) -> str:
+    """Generate a brief AI response to a parent's note on a specific milestone."""
+    name = baby_name or "your baby"
+    age_context = f"{name} is {baby_age_weeks} weeks old." if baby_age_weeks else ""
+    status_context = f"The parent marked this as '{status}'." if status else ""
+
+    system = f"""You are the Baby Navigator Assistant, providing brief, helpful responses to parents tracking their baby's milestones.
+
+{age_context}
+
+Respond in 1-2 short sentences. Be warm, supportive, and helpful. If they have a question, answer it concisely. If they express a concern, reassure them while suggesting they mention it to their pediatrician if worried. If they share a positive observation, celebrate with them briefly.
+
+IMPORTANT:
+- Keep response under 50 words
+- Be conversational and warm
+- Use the baby's name ({name}) naturally
+- Never diagnose or give medical advice
+- For health concerns, gently suggest consulting their pediatrician"""
+
+    user_message = f"""Milestone: {milestone_title}
+Description: {milestone_description}
+{status_context}
+
+Parent's note: "{parent_note}"
+
+Respond briefly to the parent's note:"""
+
+    response = await client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=100,
+        system=system,
+        messages=[{"role": "user", "content": user_message}],
+    )
+
+    return response.content[0].text
