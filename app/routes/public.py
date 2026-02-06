@@ -54,8 +54,11 @@ async def subscriber_login(
             {"request": request, "error": "No active subscription found for that email."},
             status_code=404,
         )
+    # Redirect to the correct week based on baby's age
+    baby_age = _baby_age_weeks(subscriber.baby_birth_date)
+    week = min(baby_age, 16) if baby_age is not None else 0
     return RedirectResponse(
-        url=f"/my-updates/{subscriber.unsubscribe_token}", status_code=303
+        url=f"/my-updates/{subscriber.unsubscribe_token}?week={week}", status_code=303
     )
 
 
@@ -77,8 +80,11 @@ async def subscribe(
         if not existing.is_active:
             existing.is_active = True
             db.commit()
+        # Redirect to the correct week based on baby's age
+        baby_age = _baby_age_weeks(existing.baby_birth_date)
+        week = min(baby_age, 16) if baby_age is not None else 0
         return RedirectResponse(
-            url=f"/my-updates/{existing.unsubscribe_token}", status_code=303
+            url=f"/my-updates/{existing.unsubscribe_token}?week={week}", status_code=303
         )
 
     subscriber = Subscriber(
@@ -101,8 +107,11 @@ async def subscribe(
     db.commit()
     db.refresh(subscriber)
 
+    # Redirect to the correct week based on baby's age
+    baby_age = _baby_age_weeks(subscriber.baby_birth_date)
+    week = min(baby_age, 16) if baby_age is not None else 0
     return RedirectResponse(
-        url=f"/my-updates/{subscriber.unsubscribe_token}", status_code=303
+        url=f"/my-updates/{subscriber.unsubscribe_token}?week={week}", status_code=303
     )
 
 
