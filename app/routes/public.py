@@ -361,7 +361,8 @@ async def save_milestone_notes(
             status=track.status,
         )
         track.ai_response = ai_response
-    except Exception:
+    except Exception as e:
+        print(f"AI RESPONSE ERROR: {type(e).__name__}: {e}")
         ai_response = None
         track.ai_response = None
 
