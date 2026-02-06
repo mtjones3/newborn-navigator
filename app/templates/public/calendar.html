@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Family Calendar — Newborn Navigator{% endblock %}
+
+{% block body %}
+<!-- Header -->
+<div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+    <div class="max-w-4xl mx-auto px-6 py-8">
+        <div class="flex items-center justify-between mb-1">
+            <a href="/my-updates/{{ token }}" class="text-indigo-200 hover:text-white text-sm font-medium transition flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back to Updates
+            </a>
+        </div>
+        <h1 class="text-3xl font-bold">
+            {% if subscriber.baby_name %}{{ subscriber.baby_name }}'s{% else %}Family{% endif %} Calendar
+        </h1>
+        <p class="text-indigo-200 mt-2">Track appointments, visits, and important dates</p>
+    </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-6 py-8">
+    <!-- Add Event Button -->
+    <div class="mb-6 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+            <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2 id="currentMonth" class="text-xl font-bold text-gray-900">{{ current_month_name }} {{ current_year }}</h2>
+            <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+        <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Add Event
+        </button>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <!-- Day headers -->
+        <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
+            {% for day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %}
+            <div class="py-3 text-center text-xs font-semibold text-gray-500 uppercase">{{ day }}</div>
+            {% endfor %}
+        </div>
+        <!-- Calendar days -->
+        <div id="calendarGrid" class="grid grid-cols-7">
+            {% for day_info in calendar_days %}
+            <div class="min-h-[100px] border-b border-r border-gray-100 p-2 {% if day_info.is_today %}bg-indigo-50{% elif not day_info.is_current_month %}bg-gray-50{% endif %}"
+                 onclick="openAddModal('{{ day_info.date }}')"
+                 style="cursor: pointer;">
+                <div class="flex justify-between items-start">
+                    <span class="text-sm {% if day_info.is_today %}font-bold text-indigo-600{% elif not day_info.is_current_month %}text-gray-400{% else %}text-gray-700{% endif %}">
+                        {{ day_info.day }}
+                    </span>
+                </div>
+                <div class="mt-1 space-y-1">
+                    {% for event in day_info.events %}
+                    <div onclick="event.stopPropagation(); openEditModal({{ event.id }})"
+                         class="text-xs px-1.5 py-0.5 rounded truncate cursor-pointer
+                                {% if event.category == 'dr_appointment' %}bg-red-100 text-red-700
+                                {% elif event.category == 'family_visit' %}bg-green-100 text-green-700
+                                {% elif event.category == 'vaccination' %}bg-amber-100 text-amber-700
+                                {% elif event.category == 'milestone' %}bg-purple-100 text-purple-700
+                                {% else %}bg-blue-100 text-blue-700{% endif %}">
+                        {% if event.event_time %}{{ event.event_time.strftime('%I:%M%p').lower().lstrip('0') }} {% endif %}{{ event.title }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="mt-8">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Upcoming Events</h3>
+        {% if upcoming_events %}
+        <div class="space-y-3">
+            {% for event in upcoming_events %}
+            <div onclick="openEditModal({{ event.id }})"
+                 class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition cursor-pointer">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-3 h-3 rounded-full
+                                {% if event.category == 'dr_appointment' %}bg-red-500
+                                {% elif event.category == 'family_visit' %}bg-green-500
+                                {% elif event.category == 'vaccination' %}bg-amber-500
+                                {% elif event.category == 'milestone' %}bg-purple-500
+                                {% else %}bg-blue-500{% endif %}"></span>
+                            <h4 class="font-semibold text-gray-900">{{ event.title }}</h4>
+                        </div>
+                        {% if event.description %}
+                        <p class="text-sm text-gray-600 mt-1">{{ event.description }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-right text-sm text-gray-500">
+                        <div class="font-medium">{{ event.event_date.strftime('%b %d') }}</div>
+                        {% if event.event_time %}
+                        <div>{{ event.event_time.strftime('%I:%M %p').lstrip('0') }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No upcoming events. Click "Add Event" to get started!</p>
+        {% endif %}
+    </div>
+
+    <!-- Category Legend -->
+    <div class="mt-8 flex flex-wrap gap-4 text-sm">
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500"></span> Dr. Appointment</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-green-500"></span> Family Visit</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Vaccination</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-500"></span> Milestone</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Other</span>
+    </div>
+</div>
+
+<!-- Add/Edit Event Modal -->
+<div id="eventModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Add Event</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <form id="eventForm" hx-post="/my-updates/{{ token }}/calendar/add" hx-swap="none" class="p-6 space-y-4">
+            <input type="hidden" id="eventId" name="event_id" value="">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <input type="text" id="eventTitle" name="title" required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                    <input type="date" id="eventDate" name="event_date" required
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                    <input type="time" id="eventTime" name="event_time"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select id="eventCategory" name="category"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                    <option value="other">Other</option>
+                    <option value="dr_appointment">Doctor Appointment</option>
+                    <option value="family_visit">Family Visit</option>
+                    <option value="vaccination">Vaccination</option>
+                    <option value="milestone">Milestone</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea id="eventDescription" name="description" rows="2"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                    Save Event
+                </button>
+                <button type="button" id="deleteBtn" onclick="deleteEvent()" class="hidden px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition">
+                    Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const token = "{{ token }}";
+let currentYear = {{ current_year }};
+let currentMonth = {{ current_month }};
+let editingEventId = null;
+
+function openAddModal(date) {
+    editingEventId = null;
+    document.getElementById('modalTitle').textContent = 'Add Event';
+    document.getElementById('eventForm').setAttribute('hx-post', `/my-updates/${token}/calendar/add`);
+    document.getElementById('eventId').value = '';
+    document.getElementById('eventTitle').value = '';
+    document.getElementById('eventDate').value = date || '';
+    document.getElementById('eventTime').value = '';
+    document.getElementById('eventCategory').value = 'other';
+    document.getElementById('eventDescription').value = '';
+    document.getElementById('deleteBtn').classList.add('hidden');
+    document.getElementById('eventModal').classList.remove('hidden');
+    htmx.process(document.getElementById('eventForm'));
+}
+
+function openEditModal(eventId) {
+    editingEventId = eventId;
+    fetch(`/my-updates/${token}/calendar/event/${eventId}`)
+        .then(r => r.json())
+        .then(event => {
+            document.getElementById('modalTitle').textContent = 'Edit Event';
+            document.getElementById('eventForm').setAttribute('hx-post', `/my-updates/${token}/calendar/edit/${eventId}`);
+            document.getElementById('eventId').value = eventId;
+            document.getElementById('eventTitle').value = event.title;
+            document.getElementById('eventDate').value = event.event_date;
+            document.getElementById('eventTime').value = event.event_time || '';
+            document.getElementById('eventCategory').value = event.category || 'other';
+            document.getElementById('eventDescription').value = event.description || '';
+            document.getElementById('deleteBtn').classList.remove('hidden');
+            document.getElementById('eventModal').classList.remove('hidden');
+            htmx.process(document.getElementById('eventForm'));
+        });
+}
+
+function closeModal() {
+    document.getElementById('eventModal').classList.add('hidden');
+}
+
+function deleteEvent() {
+    if (editingEventId && confirm('Delete this event?')) {
+        fetch(`/my-updates/${token}/calendar/delete/${editingEventId}`, { method: 'POST' })
+            .then(() => location.reload());
+    }
+}
+
+function changeMonth(delta) {
+    currentMonth += delta;
+    if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+    if (currentMonth < 1) { currentMonth = 12; currentYear--; }
+    location.href = `/my-updates/${token}/calendar?year=${currentYear}&month=${currentMonth}`;
+}
+
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.successful) {
+        closeModal();
+        location.reload();
+    }
+});
+</script>
+{% endblock %}

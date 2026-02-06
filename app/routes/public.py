@@ -1,15 +1,16 @@
+import calendar
 import json
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, Query, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Subscriber, Milestone, NewsletterIssue, LocalResource, MilestoneTracking
+from app.models import Subscriber, Milestone, NewsletterIssue, LocalResource, MilestoneTracking, CalendarEvent
 from app.services.ai_chat import build_system_prompt, stream_chat_response, generate_milestone_response
 
 router = APIRouter(tags=["public"])
@@ -584,3 +585,224 @@ async def save_neighborhood(
     return HTMLResponse(
         '<span class="text-green-600 text-sm font-medium">Saved!</span>'
     )
+
+
+# ── Family Calendar ──────────────────────────────────────────────────────────
+
+
+def _get_calendar_days(year: int, month: int, events_by_date: dict) -> list:
+    """Build calendar grid with events for display."""
+    cal = calendar.Calendar(firstweekday=6)  # Sunday first
+    today = date.today()
+    days = []
+
+    for d in cal.itermonthdates(year, month):
+        day_events = events_by_date.get(d, [])
+        days.append({
+            "date": d.isoformat(),
+            "day": d.day,
+            "is_current_month": d.month == month,
+            "is_today": d == today,
+            "events": day_events,
+        })
+
+    return days
+
+
+@router.get("/my-updates/{token}/calendar", response_class=HTMLResponse)
+async def family_calendar(
+    request: Request,
+    token: str,
+    year: int | None = Query(None),
+    month: int | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    subscriber = _get_subscriber_or_404(token, db)
+    if not subscriber:
+        return templates.TemplateResponse(
+            "error.html",
+            {"request": request, "status_code": 404, "detail": "Page not found"},
+            status_code=404,
+        )
+
+    today = date.today()
+    current_year = year or today.year
+    current_month = month or today.month
+
+    # Get events for this month (and edges for calendar display)
+    first_of_month = date(current_year, current_month, 1)
+    if current_month == 12:
+        last_of_month = date(current_year + 1, 1, 1) - timedelta(days=1)
+    else:
+        last_of_month = date(current_year, current_month + 1, 1) - timedelta(days=1)
+
+    # Extend range to cover calendar grid
+    start_date = first_of_month - timedelta(days=first_of_month.weekday() + 1)
+    end_date = last_of_month + timedelta(days=7)
+
+    events = (
+        db.query(CalendarEvent)
+        .filter(
+            CalendarEvent.subscriber_id == subscriber.id,
+            CalendarEvent.event_date >= start_date,
+            CalendarEvent.event_date <= end_date,
+        )
+        .order_by(CalendarEvent.event_date, CalendarEvent.event_time)
+        .all()
+    )
+
+    events_by_date = {}
+    for event in events:
+        events_by_date.setdefault(event.event_date, []).append(event)
+
+    calendar_days = _get_calendar_days(current_year, current_month, events_by_date)
+
+    # Upcoming events (next 30 days)
+    upcoming_events = (
+        db.query(CalendarEvent)
+        .filter(
+            CalendarEvent.subscriber_id == subscriber.id,
+            CalendarEvent.event_date >= today,
+            CalendarEvent.event_date <= today + timedelta(days=30),
+        )
+        .order_by(CalendarEvent.event_date, CalendarEvent.event_time)
+        .limit(10)
+        .all()
+    )
+
+    month_names = [
+        "", "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
+
+    return templates.TemplateResponse(
+        "public/calendar.html",
+        {
+            "request": request,
+            "subscriber": subscriber,
+            "token": token,
+            "current_year": current_year,
+            "current_month": current_month,
+            "current_month_name": month_names[current_month],
+            "calendar_days": calendar_days,
+            "upcoming_events": upcoming_events,
+        },
+    )
+
+
+@router.get("/my-updates/{token}/calendar/event/{event_id}")
+async def get_calendar_event(
+    token: str,
+    event_id: int,
+    db: Session = Depends(get_db),
+):
+    subscriber = _get_subscriber_or_404(token, db)
+    if not subscriber:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+
+    event = (
+        db.query(CalendarEvent)
+        .filter(CalendarEvent.id == event_id, CalendarEvent.subscriber_id == subscriber.id)
+        .first()
+    )
+    if not event:
+        return JSONResponse({"error": "Event not found"}, status_code=404)
+
+    return JSONResponse({
+        "id": event.id,
+        "title": event.title,
+        "description": event.description,
+        "event_date": event.event_date.isoformat(),
+        "event_time": event.event_time.strftime("%H:%M") if event.event_time else None,
+        "category": event.category,
+    })
+
+
+@router.post("/my-updates/{token}/calendar/add")
+async def add_calendar_event(
+    request: Request,
+    token: str,
+    title: str = Form(...),
+    event_date: str = Form(...),
+    event_time: str = Form(""),
+    category: str = Form("other"),
+    description: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    subscriber = _get_subscriber_or_404(token, db)
+    if not subscriber:
+        return HTMLResponse("Not found", status_code=404)
+
+    parsed_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+    parsed_time = None
+    if event_time:
+        parsed_time = datetime.strptime(event_time, "%H:%M").time()
+
+    event = CalendarEvent(
+        subscriber_id=subscriber.id,
+        title=title,
+        description=description or None,
+        event_date=parsed_date,
+        event_time=parsed_time,
+        category=category,
+    )
+    db.add(event)
+    db.commit()
+
+    return HTMLResponse("OK")
+
+
+@router.post("/my-updates/{token}/calendar/edit/{event_id}")
+async def edit_calendar_event(
+    request: Request,
+    token: str,
+    event_id: int,
+    title: str = Form(...),
+    event_date: str = Form(...),
+    event_time: str = Form(""),
+    category: str = Form("other"),
+    description: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    subscriber = _get_subscriber_or_404(token, db)
+    if not subscriber:
+        return HTMLResponse("Not found", status_code=404)
+
+    event = (
+        db.query(CalendarEvent)
+        .filter(CalendarEvent.id == event_id, CalendarEvent.subscriber_id == subscriber.id)
+        .first()
+    )
+    if not event:
+        return HTMLResponse("Event not found", status_code=404)
+
+    event.title = title
+    event.event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+    event.event_time = datetime.strptime(event_time, "%H:%M").time() if event_time else None
+    event.category = category
+    event.description = description or None
+    db.commit()
+
+    return HTMLResponse("OK")
+
+
+@router.post("/my-updates/{token}/calendar/delete/{event_id}")
+async def delete_calendar_event(
+    token: str,
+    event_id: int,
+    db: Session = Depends(get_db),
+):
+    subscriber = _get_subscriber_or_404(token, db)
+    if not subscriber:
+        return HTMLResponse("Not found", status_code=404)
+
+    event = (
+        db.query(CalendarEvent)
+        .filter(CalendarEvent.id == event_id, CalendarEvent.subscriber_id == subscriber.id)
+        .first()
+    )
+    if event:
+        db.delete(event)
+        db.commit()
+
+    return HTMLResponse("OK")
