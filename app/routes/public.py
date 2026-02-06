@@ -338,9 +338,32 @@ async def save_milestone_notes(
 
     db.commit()
 
-    return HTMLResponse(
-        '<span class="text-green-600 text-xs font-medium">Saved!</span>'
-    )
+    # Generate contextual feedback based on note content
+    note_text = notes.strip().lower()
+    if not note_text:
+        return HTMLResponse(
+            '<span class="text-gray-400 text-xs">Note cleared</span>'
+        )
+
+    # Detect questions
+    if "?" in notes or any(w in note_text for w in ["how", "why", "when", "should", "can i", "is it", "what if"]):
+        return HTMLResponse(
+            '<span class="text-indigo-600 text-xs font-medium cursor-pointer" onclick="toggleChat()">Saved! Click here to ask the assistant about this</span>'
+        )
+    # Detect concerns/worries
+    elif any(w in note_text for w in ["worried", "concern", "not sure", "nervous", "scared", "afraid", "help", "problem", "issue", "wrong", "behind", "late", "slow"]):
+        return HTMLResponse(
+            '<span class="text-amber-600 text-xs font-medium cursor-pointer" onclick="toggleChat()">Noted. Want to chat about this concern?</span>'
+        )
+    # Detect positive observations
+    elif any(w in note_text for w in ["early", "already", "great", "amazing", "love", "excited", "happy", "did it", "first time"]):
+        return HTMLResponse(
+            '<span class="text-green-600 text-xs font-medium">Saved! Great observation!</span>'
+        )
+    else:
+        return HTMLResponse(
+            '<span class="text-green-600 text-xs font-medium">Saved!</span>'
+        )
 
 
 # ── AI Chat ──────────────────────────────────────────────────────────────────
