@@ -177,6 +177,12 @@ async def my_updates(
     ) if milestone_ids else []
     tracking = {t.milestone_id: t for t in tracking_rows}
 
+    # Progress counts for the progress bar
+    total_count = len(milestones)
+    achieved_count = sum(1 for t in tracking_rows if t.status == "achieved")
+    concern_count = sum(1 for t in tracking_rows if t.status == "concern")
+    untracked_count = total_count - achieved_count - concern_count
+
     return templates.TemplateResponse(
         "public/my_updates.html",
         {
@@ -190,6 +196,11 @@ async def my_updates(
             "available_issues": available_issues,
             "token": token,
             "tracking": tracking,
+            "total_count": total_count,
+            "achieved_count": achieved_count,
+            "concern_count": concern_count,
+            "untracked_count": untracked_count,
+            "baby_name": subscriber.baby_name,
         },
     )
 
@@ -242,12 +253,56 @@ async def toggle_milestone(
     db.commit()
     db.refresh(track)
 
+    # Compute updated progress counts for this week
+    week_milestones = (
+        db.query(Milestone)
+        .filter(Milestone.week_number == milestone.week_number)
+        .all()
+    )
+    week_milestone_ids = [wm.id for wm in week_milestones]
+    week_tracking = (
+        db.query(MilestoneTracking)
+        .filter(
+            MilestoneTracking.subscriber_id == subscriber.id,
+            MilestoneTracking.milestone_id.in_(week_milestone_ids),
+        )
+        .all()
+    )
+    total_count = len(week_milestones)
+    achieved_count = sum(1 for t in week_tracking if t.status == "achieved")
+    concern_count = sum(1 for t in week_tracking if t.status == "concern")
+    untracked_count = total_count - achieved_count - concern_count
+
     tracking = {milestone.id: track}
     m = milestone
-    return templates.TemplateResponse(
+
+    # Render card with feedback + out-of-band progress bar update
+    card_html = templates.TemplateResponse(
         "public/partials/milestone_card.html",
-        {"request": request, "m": m, "token": token, "tracking": tracking},
+        {"request": request, "m": m, "token": token, "tracking": tracking, "show_feedback": True},
+    ).body.decode()
+
+    progress_html = templates.TemplateResponse(
+        "public/partials/milestone_progress.html",
+        {
+            "request": request,
+            "week": milestone.week_number,
+            "total_count": total_count,
+            "achieved_count": achieved_count,
+            "concern_count": concern_count,
+            "untracked_count": untracked_count,
+            "baby_name": subscriber.baby_name if hasattr(subscriber, "baby_name") else None,
+        },
+    ).body.decode()
+
+    # Use HTMX out-of-band swap to update progress bar alongside the card
+    oob_progress = progress_html.replace(
+        'id="milestone-progress"',
+        'id="milestone-progress" hx-swap-oob="outerHTML"',
+        1,
     )
+
+    return HTMLResponse(card_html + oob_progress)
 
 
 @router.post("/my-updates/{token}/track/{milestone_id}/notes", response_class=HTMLResponse)

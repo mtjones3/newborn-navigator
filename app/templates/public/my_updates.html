@@ -93,7 +93,9 @@
     {% if categories %}
     <div class="mb-10">
         <h2 class="text-xl font-bold text-gray-900 mb-1">Week {{ week }} Milestones</h2>
-        <p class="text-sm text-gray-500 mb-6">What to look for and things to try this week.</p>
+        <p class="text-sm text-gray-500 mb-4">What to look for and things to try this week.</p>
+
+        {% include "public/partials/milestone_progress.html" %}
 
         <div class="space-y-6">
             {% for category, items in categories.items() %}
@@ -193,6 +195,15 @@
         </button>
     </form>
 </div>
+
+<style>
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-4px); }
+    10% { opacity: 1; transform: translateY(0); }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+</style>
 
 <script>
 const chatToken = "{{ token }}";

@@ -42,6 +42,26 @@
                 <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Talk to your pediatrician</span>
                 {% endif %}
             </h4>
+
+            <!-- Inline feedback message -->
+            {% if show_feedback is defined and show_feedback %}
+            <div class="mt-1.5 milestone-feedback" style="animation: fadeInOut 4s ease-in-out forwards;">
+                {% if current_status == 'achieved' %}
+                <p class="text-xs text-green-700 font-medium flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Great job noticing this! Keep up the amazing parenting.
+                </p>
+                {% elif current_status == 'concern' %}
+                <p class="text-xs text-amber-700 font-medium flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Every baby develops differently — try asking the chat assistant for tips, or mention it at your next pediatrician visit.
+                </p>
+                {% else %}
+                <p class="text-xs text-gray-500 font-medium">Status cleared. You can always track it again later.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
             <p class="text-sm text-gray-600 mt-1">{{ m.description }}</p>
             {% if m.parent_action %}
             <div class="mt-2 bg-indigo-50 rounded-lg px-3 py-2">
