@@ -14,6 +14,10 @@ from app.routes import auth, admin, public
 # Create tables
 Base.metadata.create_all(bind=engine)
 
+# Auto-seed milestone data if empty
+from app.seed.seed_milestones import seed as seed_milestones
+seed_milestones()
+
 app = FastAPI(title="NewbornAI Navigator")
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
