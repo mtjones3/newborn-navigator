@@ -14,7 +14,7 @@ from app.routes import auth, admin, public
 # Create tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Newborn Navigator")
+app = FastAPI(title="NewbornAI Navigator")
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 # Middleware

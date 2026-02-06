@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-{% if subscriber.baby_name %}{{ subscriber.baby_name }}'s{% else %}Your Baby's{% endif %} Updates — Newborn Navigator
+{% if subscriber.baby_name %}{{ subscriber.baby_name }}'s{% else %}Your Baby's{% endif %} Updates — NewbornAI Navigator
 {% endblock %}
 
 {% block body %}
@@ -9,7 +9,7 @@
 <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
     <div class="max-w-3xl mx-auto px-6 py-10">
         <div class="flex items-center justify-between mb-1">
-            <p class="text-indigo-200 text-sm font-medium">Newborn Navigator</p>
+            <p class="text-indigo-200 text-sm font-medium">NewbornAI Navigator</p>
             <a href="/" class="text-indigo-200 hover:text-white text-sm font-medium transition">Log out</a>
         </div>
         <h1 class="text-3xl font-bold">
@@ -169,7 +169,7 @@
 <!-- Footer -->
 <footer class="bg-gray-900 text-gray-400 py-8">
     <div class="max-w-3xl mx-auto px-6 text-center text-sm">
-        <p>Newborn Navigator &mdash; Evidence-based guidance for new parents.</p>
+        <p>NewbornAI Navigator &mdash; Evidence-based guidance for new parents.</p>
         <p class="mt-2 text-gray-600">
             This is not medical advice. Always consult your pediatrician.
             &middot; <a href="/unsubscribe/{{ token }}" class="text-gray-500 hover:text-gray-300">Unsubscribe</a>
